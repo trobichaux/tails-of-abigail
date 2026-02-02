@@ -19,6 +19,7 @@ struct CalendarView: View {
     @State private var displayedMonth = Date()
     @State private var selectedDate: Date?
     @State private var showingIncidentsForDate = false
+    @State private var showingAddSheet = false
 
     private let calendar = Calendar.current
     private let daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
@@ -87,8 +88,26 @@ struct CalendarView: View {
                             onToggle: { filterState.toggleFurniture($0) },
                             onClearAll: { filterState.clearFurnitureFilters() }
                         )
+
+                        FilterMenu(
+                            title: "Type",
+                            items: Array(IncidentType.allCases),
+                            selectedItems: filterState.selectedIncidentTypes,
+                            itemName: { $0.displayName },
+                            onToggle: { filterState.toggleIncidentType($0) },
+                            onClearAll: { filterState.clearIncidentTypeFilters() }
+                        )
                     }
                 }
+
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button(action: { showingAddSheet = true }) {
+                        Label("Add Incident", systemImage: "plus")
+                    }
+                }
+            }
+            .sheet(isPresented: $showingAddSheet) {
+                IncidentDetailView()
             }
             .sheet(isPresented: $showingIncidentsForDate) {
                 if let selectedDate {

@@ -23,9 +23,9 @@ struct IncidentListForDateView: View {
             Group {
                 if incidents.isEmpty {
                     ContentUnavailableView(
-                        "No Incidents",
+                        "No Recorded Events",
                         systemImage: "calendar",
-                        description: Text("Add an incident for this date")
+                        description: Text("Tap the + button to add an incident for this date")
                     )
                 } else {
                     List {

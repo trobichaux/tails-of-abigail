@@ -18,6 +18,7 @@ struct IncidentDetailView: View {
     @State private var selectedRoom: Room?
     @State private var selectedFurniture: Furniture?
     @State private var notes: String
+    @State private var selectedIncidentType: IncidentType
 
     let incident: Incident?
     let onSave: (() -> Void)?
@@ -29,6 +30,7 @@ struct IncidentDetailView: View {
         _selectedRoom = State(initialValue: incident?.room)
         _selectedFurniture = State(initialValue: incident?.furniture)
         _notes = State(initialValue: incident?.notes ?? "")
+        _selectedIncidentType = State(initialValue: incident?.incidentType ?? .other)
     }
 
     var body: some View {
@@ -36,6 +38,20 @@ struct IncidentDetailView: View {
             Form {
                 Section("Date & Time") {
                     DatePicker("When", selection: $timestamp, displayedComponents: [.date, .hourAndMinute])
+                }
+
+                Section("Type") {
+                    Picker("Incident Type", selection: $selectedIncidentType) {
+                        ForEach(IncidentType.allCases) { type in
+                            Label {
+                                Text(type.displayName)
+                            } icon: {
+                                Image(systemName: type.icon)
+                                    .foregroundStyle(type.color)
+                            }
+                            .tag(type)
+                        }
+                    }
                 }
 
                 Section("Location") {
@@ -82,12 +98,14 @@ struct IncidentDetailView: View {
             incident.room = selectedRoom
             incident.furniture = selectedFurniture
             incident.notes = notes
+            incident.incidentType = selectedIncidentType
         } else {
             let newIncident = Incident(
                 timestamp: timestamp,
                 furniture: selectedFurniture,
                 room: selectedRoom,
-                notes: notes
+                notes: notes,
+                incidentType: selectedIncidentType
             )
             modelContext.insert(newIncident)
         }

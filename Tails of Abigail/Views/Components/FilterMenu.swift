@@ -7,7 +7,7 @@
 
 import SwiftUI
 
-struct FilterMenu<T: Identifiable & Hashable>: View where T: AnyObject {
+struct FilterMenu<T: Identifiable & Hashable>: View {
     let title: String
     let items: [T]
     let selectedItems: Set<T>

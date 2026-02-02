@@ -88,6 +88,27 @@ struct StatisticsView: View {
         }
     }
 
+    var mostCommonIncidentType: String? {
+        guard filterState.isAllIncidentTypesSelected else { return nil }
+
+        let typeCounts = Dictionary(grouping: filteredIncidents, by: { $0.incidentType })
+            .mapValues { $0.count }
+
+        return typeCounts.max(by: { $0.value < $1.value })?.key.displayName
+    }
+
+    var incidentTypeDistribution: [(type: IncidentType, count: Int)] {
+        let typeCounts = Dictionary(grouping: filteredIncidents, by: { $0.incidentType })
+            .mapValues { $0.count }
+
+        return IncidentType.allCases.compactMap { type in
+            if let count = typeCounts[type], count > 0 {
+                return (type, count)
+            }
+            return nil
+        }.sorted { $0.count > $1.count }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
@@ -96,13 +117,16 @@ struct StatisticsView: View {
                         ContentUnavailableView(
                             "No Data",
                             systemImage: "chart.bar",
-                            description: Text(filterState.isAllRoomsSelected && filterState.isAllFurnitureSelected
+                            description: Text(filterState.isAllRoomsSelected && filterState.isAllFurnitureSelected && filterState.isAllIncidentTypesSelected
                                 ? "Add incidents to see statistics"
                                 : "No incidents match the selected filters")
                         )
                         .frame(minHeight: 400)
                     } else {
                         chartSection
+                        if !incidentTypeDistribution.isEmpty {
+                            incidentTypeChartSection
+                        }
                         summarySection
                     }
                 }
@@ -128,6 +152,15 @@ struct StatisticsView: View {
                             itemName: { $0.name },
                             onToggle: { filterState.toggleFurniture($0) },
                             onClearAll: { filterState.clearFurnitureFilters() }
+                        )
+
+                        FilterMenu(
+                            title: "Type",
+                            items: Array(IncidentType.allCases),
+                            selectedItems: filterState.selectedIncidentTypes,
+                            itemName: { $0.displayName },
+                            onToggle: { filterState.toggleIncidentType($0) },
+                            onClearAll: { filterState.clearIncidentTypeFilters() }
                         )
                     }
                 }
@@ -167,6 +200,38 @@ struct StatisticsView: View {
         )
     }
 
+    private var incidentTypeChartSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Incidents by Type")
+                .font(.headline)
+
+            Chart {
+                ForEach(incidentTypeDistribution, id: \.type) { item in
+                    BarMark(
+                        x: .value("Type", item.type.displayName),
+                        y: .value("Count", item.count)
+                    )
+                    .foregroundStyle(item.type.color)
+                    .annotation(position: .top) {
+                        Text("\(item.count)")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+            .frame(height: 200)
+            .chartYAxis {
+                AxisMarks(position: .leading)
+            }
+        }
+        .padding()
+        .background(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.systemBackground))
+                .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        )
+    }
+
     private var summarySection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Summary")
@@ -181,6 +246,10 @@ struct StatisticsView: View {
 
                 if let furniture = mostFrequentFurniture {
                     StatRow(label: "Most Frequent Furniture", value: furniture)
+                }
+
+                if let type = mostCommonIncidentType {
+                    StatRow(label: "Most Common Type", value: type)
                 }
 
                 StatRow(label: "Average Per Week", value: String(format: "%.1f", averagePerWeek))

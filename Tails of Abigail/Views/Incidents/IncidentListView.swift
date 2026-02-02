@@ -30,7 +30,7 @@ struct IncidentListView: View {
                     ContentUnavailableView(
                         "No Incidents",
                         systemImage: "checkmark.circle",
-                        description: Text(filterState.isAllRoomsSelected && filterState.isAllFurnitureSelected
+                        description: Text(filterState.isAllRoomsSelected && filterState.isAllFurnitureSelected && filterState.isAllIncidentTypesSelected
                             ? "Add your first incident"
                             : "No incidents match the selected filters")
                     )
@@ -69,6 +69,15 @@ struct IncidentListView: View {
                             onToggle: { filterState.toggleFurniture($0) },
                             onClearAll: { filterState.clearFurnitureFilters() }
                         )
+
+                        FilterMenu(
+                            title: "Type",
+                            items: Array(IncidentType.allCases),
+                            selectedItems: filterState.selectedIncidentTypes,
+                            itemName: { $0.displayName },
+                            onToggle: { filterState.toggleIncidentType($0) },
+                            onClearAll: { filterState.clearIncidentTypeFilters() }
+                        )
                     }
                 }
 
@@ -99,11 +108,29 @@ struct IncidentRow: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
-            Text(incident.timestamp, style: .date)
-                .font(.headline)
-            Text(incident.timestamp, style: .time)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
+            HStack {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(incident.timestamp, style: .date)
+                        .font(.headline)
+                    Text(incident.timestamp, style: .time)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+
+                Spacer()
+
+                Label {
+                    Text(incident.incidentType.displayName)
+                } icon: {
+                    Image(systemName: incident.incidentType.icon)
+                        .foregroundStyle(incident.incidentType.color)
+                }
+                .font(.caption)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(incident.incidentType.color.opacity(0.2))
+                .clipShape(Capsule())
+            }
 
             HStack {
                 if let room = incident.room {

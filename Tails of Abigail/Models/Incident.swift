@@ -14,11 +14,13 @@ final class Incident {
     var furniture: Furniture?
     var room: Room?
     var notes: String
+    var incidentType: IncidentType
 
-    init(timestamp: Date, furniture: Furniture? = nil, room: Room? = nil, notes: String = "") {
+    init(timestamp: Date, furniture: Furniture? = nil, room: Room? = nil, notes: String = "", incidentType: IncidentType = .other) {
         self.timestamp = timestamp
         self.furniture = furniture
         self.room = room
         self.notes = notes
+        self.incidentType = incidentType
     }
 }

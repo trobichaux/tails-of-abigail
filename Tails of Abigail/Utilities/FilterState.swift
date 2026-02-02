@@ -12,6 +12,7 @@ import SwiftData
 final class FilterState {
     var selectedRooms: Set<Room> = []
     var selectedFurniture: Set<Furniture> = []
+    var selectedIncidentTypes: Set<IncidentType> = []
 
     var isAllRoomsSelected: Bool {
         selectedRooms.isEmpty
@@ -19,6 +20,10 @@ final class FilterState {
 
     var isAllFurnitureSelected: Bool {
         selectedFurniture.isEmpty
+    }
+
+    var isAllIncidentTypesSelected: Bool {
+        selectedIncidentTypes.isEmpty
     }
 
     func toggleRoom(_ room: Room) {
@@ -45,10 +50,23 @@ final class FilterState {
         selectedFurniture.removeAll()
     }
 
+    func toggleIncidentType(_ incidentType: IncidentType) {
+        if selectedIncidentTypes.contains(incidentType) {
+            selectedIncidentTypes.remove(incidentType)
+        } else {
+            selectedIncidentTypes.insert(incidentType)
+        }
+    }
+
+    func clearIncidentTypeFilters() {
+        selectedIncidentTypes.removeAll()
+    }
+
     func matchesFilters(_ incident: Incident) -> Bool {
         let roomMatch = selectedRooms.isEmpty || (incident.room != nil && selectedRooms.contains(incident.room!))
         let furnitureMatch = selectedFurniture.isEmpty || (incident.furniture != nil && selectedFurniture.contains(incident.furniture!))
-        return roomMatch && furnitureMatch
+        let incidentTypeMatch = selectedIncidentTypes.isEmpty || selectedIncidentTypes.contains(incident.incidentType)
+        return roomMatch && furnitureMatch && incidentTypeMatch
     }
 }
 
